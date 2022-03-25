@@ -79,3 +79,8 @@ countryReview <- daily %>%
     ARPU = (totalRev / totalInstalls),
     ROAS = (totalRev / totalCost)) %>%
   unique()
+
+# English only speaking countries, I believe lower costs could be achieved in other markets but ad money is probably lower too
+# Was not expecting NZ to have such a high CPI
+# US seems to be standard around all games in terms of ROAS, weird play between CA / UK in terms of which games are performing best
+
