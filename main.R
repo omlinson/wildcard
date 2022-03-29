@@ -32,7 +32,6 @@ gameReview <- daily %>%
     ROAS = (totalRev / totalCost)) %>%
   unique()
 
-
 #one game seems to suck a lot more than the others, only one is profitable at at 30. 
 # ULC: can we drive down CPI drastically? do we become profitable at 90+? 
 # ULC: why so much spend? is it an older game? did we tap out audience / using old profits to pay for growth?
@@ -41,6 +40,46 @@ gameReview <- daily %>%
 # ULM: Profitable after 30 days. highest CPI - maybe somethingn to cut to increase profits. 
 # I haven't really looked at cohorts / retention yet. 30 days seems like a good target for profitable
 # would love to know if there are "addicts" 
+
+#check cohorts
+
+gameCohort <- daily %>%
+  group_by(game) %>%
+  summarise(
+    game = game,
+    revenue_d0 = sum(revenue_d0),
+    revenue_d15 = sum(revenue_d15),
+    revenue_d30 = sum(revenue_d30),
+    retained_users_d0 = sum(retained_users_d0),
+    retained_users_d15 = sum(retained_users_d15),
+    retained_users_d30 = sum(retained_users_d30)
+  ) %>%
+  unique()
+
+
+gameCohort2 <- gather(gameCohort, "cohort", "revenue", 2:4)
+gameCohort3 <- gather(gameCohort, "cohort", "retained", 5:7)
+
+# graph it out
+
+ggplot(gameCohort2, aes(cohort, revenue, group=factor(game))) + geom_line(aes(color=factor(game)))
+ggplot(gameCohort3, aes(cohort, retained, group=factor(game))) + geom_line(aes(color=factor(game)))
+
+
+# go into networks
+
+
+networkMacro <- daily %>% 
+  group_by(network) %>%
+  summarise(
+    network = network,
+    totalCost =sum(cost),
+    totalRev = sum(cohort_revenue),
+    totalInstalls = sum(installs),
+    CPI =  (totalInstalls / totalCost),
+    ARPU = (totalRev / totalInstalls),
+    ROAS = (totalRev / totalCost)) %>%
+  unique()
 
 networkReview <- daily %>% 
   group_by(network, os_name, game) %>%
@@ -83,4 +122,28 @@ countryReview <- daily %>%
 # English only speaking countries, I believe lower costs could be achieved in other markets but ad money is probably lower too
 # Was not expecting NZ to have such a high CPI
 # US seems to be standard around all games in terms of ROAS, weird play between CA / UK in terms of which games are performing best
+
+# Going to split campaigns by games - I don't necessarily agree that it should always be done that way
+# Will not look at Green as it's the low spender and this is a test - i'm just going to suggest an exit
+
+###  ULC
+
+
+ULCReview <- daily %>% 
+  group_by(game, network, campaign) %>%
+  summarise(
+    game = game,
+    campaign = campaign,
+    totalCost =sum(cost),
+    totalRev = sum(cohort_revenue),
+    totalInstalls = sum(installs),
+    CPI =  (totalInstalls / totalCost),
+    ARPU = (totalRev / totalInstalls),
+    ROAS = (totalRev / totalCost)) %>%
+  filter(game == "ULC", network != "Green")  %>%
+  unique()
+
+# no good way to analyze this quickly, to properly follow cohorts and results
+# I'd really need to look at how long each lasted (ie. 1 day for campaign X vs 10 days for campaign y)..
+# will go straight to presentation as I could already talk for more than 15 minutes easy. 
 
