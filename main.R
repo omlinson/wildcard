@@ -143,7 +143,38 @@ ULCReview <- daily %>%
   filter(game == "ULC", network != "Green")  %>%
   unique()
 
-# no good way to analyze this quickly, to properly follow cohorts and results
-# I'd really need to look at how long each lasted (ie. 1 day for campaign X vs 10 days for campaign y)..
-# will go straight to presentation as I could already talk for more than 15 minutes easy. 
+#tried to remove campaigns that did not last the whole quarter, but it removed a few high paying campaigns so 
+
+ULChurnReview <- daily %>% 
+  group_by(game, network, campaign) %>%
+  summarise(
+    game = game,
+    campaign = campaign,
+    start = min(dmy(daily$date[daily$campaign == campaign])),
+    end = max(dmy(daily$date[daily$campaign == campaign])),
+    totalCost = sum(cost),
+    totalInstalls = sum(installs),
+    CPI = sum(cost)/sum(installs),
+    ROAS = sum(cohort_revenue)/totalCost,
+    churn_d1 = (totalInstalls-sum(retained_users_d1))/totalInstalls,
+    churn_d15 = (totalInstalls-sum(retained_users_d15))/totalInstalls,
+    churn_d30 = (totalInstalls-sum(retained_users_d30))/totalInstalls
+  ) %>%
+  ungroup %>%
+  filter(game == "ULC", totalCost >= mean(totalCost))  %>%
+  unique()
+
+
+# ULChurnReview$costShare <- ULChurnReview$totalCost / sum(ULChurnReview$totalCost)
+
+
+
+summary(ULChurnReview)
+
+
+
+# option to look at churn to just get the code for it and not sure why i get a warning for the dates
+# will opt to ignore campaigns that did not span the full period - some were paused late in November
+# they were placed by a few others -> might be worth eliminating from all data
+
 
